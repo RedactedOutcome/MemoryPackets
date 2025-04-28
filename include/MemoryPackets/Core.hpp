@@ -7,3 +7,9 @@
 #include <cstdint>
 #include <HBuffer/HBuffer.hpp>
 #endif
+
+/// @brief follow type convention
+/// char - 1 byte
+/// short - 2 bytes
+/// int - 4 bytes
+/// long - 8 bytes
