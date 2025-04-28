@@ -99,7 +99,6 @@ namespace MemoryPackets{
             HBuffer data;
             status = false;
             
-            /// TODO: 
             if(sizeEncoded){
                 uint32_t size = ReadUInt32(status, false);
                 data.ReserveString(size);
