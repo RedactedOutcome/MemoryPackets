@@ -10,7 +10,7 @@ namespace MemoryPackets{
         MPacket()noexcept{}
         MPacket(const HBuffer& data) : m_Buffer(data){}
         MPacket(HBuffer&& data) : m_Buffer(std::move(data)){}
-    
+        
     public:
         void WriteUInt8(uint8_t data)noexcept{
             

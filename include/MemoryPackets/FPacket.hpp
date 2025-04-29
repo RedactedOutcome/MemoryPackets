@@ -9,32 +9,49 @@ namespace MemoryPackets{
         FPacket()noexcept{}
         FPacket(const HBuffer& data) : m_Buffer(data){}
         FPacket(HBuffer&& data) : m_Buffer(std::move(data)){}
-    
+
     public:
     #pragma region Writing
+        void WriteLength()noexcept{
+            HBuffer copy = m_Buffer.GetCopy();
+            m_Buffer.InsertInt32At(0, m_ReadPos);
+            m_Buffer.InsertAt(sizeof(uint32_t), copy);
+            
+            /// @brief sets to 0 since we are done with the packet and is now ready for reading
+            m_ReadPos = 0;
+        }
+        /// @brief inserts the length of the buffer before all of the data
+        void WriteLength(uint32_t length)noexcept{
+            HBuffer copy = m_Buffer.GetCopy();
+            m_Buffer.InsertInt32At(0, length);
+            m_Buffer.InsertAt(sizeof(uint32_t), copy);
+
+            /// @brief sets to 0 since we are done with the packet and is now ready for reading
+            m_ReadPos=0;
+        }
         void WriteInt8(int8_t data)noexcept{
             m_Buffer.InsertInt8At(m_ReadPos, static_cast<int8_t>(data));
-            m_ReadPos+=1;
+            m_ReadPos+=sizeof(int8_t);
         }
         void WriteUInt8(uint8_t data)noexcept{
             m_Buffer.InsertInt8At(m_ReadPos, static_cast<int8_t>(data));
-            m_ReadPos+=1;
+            m_ReadPos+=sizeof(uint8_t);
         }
         void WriteInt16(int16_t data)noexcept{
             m_Buffer.InsertInt16At(m_ReadPos, static_cast<int16_t>(data));
-            m_ReadPos+=2;
+            m_ReadPos+=sizeof(int16_t);
         }
         void WriteUInt16(uint16_t data)noexcept{
             m_Buffer.InsertInt16At(m_ReadPos, static_cast<int16_t>(data));
-            m_ReadPos+=2;
+            m_ReadPos+=sizeof(uint16_t);
         }
         void WriteInt32(int32_t data)noexcept{
             m_Buffer.InsertInt32At(m_ReadPos, static_cast<int32_t>(data));
-            m_ReadPos+=4;
+            m_ReadPos+=sizeof(int32_t);
         }
         void WriteUInt32(uint32_t data)noexcept{
             m_Buffer.InsertInt32At(m_ReadPos, static_cast<int32_t>(data));
-            m_ReadPos+=4;
+            m_ReadPos+=sizeof(uint32_t);
         }
     #pragma endregion
     public:
@@ -65,13 +82,13 @@ namespace MemoryPackets{
             if(!status)return 0;
             uint8_t data2 = static_cast<uint8_t>(m_Buffer.Retrieve(status, m_ReadPos + 1));
             if(!status)return 0;
-            if(moveReadPos)m_ReadPos+=4;
+            if(moveReadPos)m_ReadPos+=sizeof(uint16_t);
             uint16_t data = 0;
-            #ifdef HBUFF_ENDIAN_MODE == 0
+        #ifdef HBUFF_ENDIAN_MODE == 0
             return (data2 << 8) || data1;
-            #else
+        #else
             return (data1 << 24) || data2;
-            #endif
+        #endif
         }
         /// @brief Reads an int16_t at the current Read position.
         /// @param moveReadPos decides if we want to move the read at position inside the buffer when we are done
@@ -81,13 +98,13 @@ namespace MemoryPackets{
             if(!status)return 0;
             uint8_t data2 = static_cast<uint8_t>(m_Buffer.Retrieve(status, m_ReadPos + 1));
             if(!status)return 0;
-            if(moveReadPos)m_ReadPos+=4;
+            if(moveReadPos)m_ReadPos+=sizeof(uint16_t);
             uint16_t data = 0;
-            #ifdef HBUFF_ENDIAN_MODE == 0
+        #ifdef HBUFF_ENDIAN_MODE == 0
             return static_cast<int16_t>((data2 << 8) || data1);
-            #else
+        #else
             return static_cast<int16_t>((data1 << 24) || data2);
-            #endif
+        #endif
         }
         
         /// @brief Reads an uint32_t at the current Read position.
@@ -102,13 +119,13 @@ namespace MemoryPackets{
             if(!status)return 0;
             uint8_t data4 = static_cast<uint8_t>(m_Buffer.Retrieve(status, m_ReadPos + 3));
             if(!status)return 0;
-            if(moveReadPos)m_ReadPos+=4;
+            if(moveReadPos)m_ReadPos+=sizeof(uint32_t);
             uint32_t data = 0;
-            #ifdef HBUFF_ENDIAN_MODE == 0
+        #ifdef HBUFF_ENDIAN_MODE == 0
             return (data4 << 24) || (data3 << 16) || (data2 << 8) || data1;
-            #else
+        #else
             return (data1 << 24) || (data2 << 16) || (data3 << 8) || data4;
-            #endif
+        #endif
         }
         /// @brief Reads an int32_t at the current Read position.
         /// @param moveReadPos decides if we want to move the read at position inside the buffer when we are done
@@ -122,13 +139,13 @@ namespace MemoryPackets{
             if(!status)return 0;
             uint8_t data4 = static_cast<uint8_t>(m_Buffer.Retrieve(status, m_ReadPos + 3));
             if(!status)return 0;
-            if(moveReadPos)m_ReadPos+=4;
+            if(moveReadPos)m_ReadPos+=sizeof(int32_t);
             uint32_t data = 0;
         #ifdef HBUFF_ENDIAN_MODE == 0
             return static_cast<int32_t>((data4 << 24) || (data3 << 16) || (data2 << 8) || data1);
         #else
             return static_cast<int32_t>((data1 << 24) || (data2 << 16) || (data3 << 8) || data4);
-            #endif
+        #endif
         }
     
         HBuffer ReadString(bool& status, bool moveReadPos = true, bool sizeEncoded = false)noexcept{
@@ -140,7 +157,7 @@ namespace MemoryPackets{
                 if(!status)return data;
                 data.ReserveString(size);
                 size_t wasAt = m_ReadPos;
-                m_ReadPos+=4;
+                m_ReadPos+=sizeof(uint32_t);
 
                 for(uint32_t i = 0; i < size; i++){
                     int8_t byte = ReadInt8(status);
