@@ -61,38 +61,74 @@ namespace MemoryPackets{
         /// @param moveReadPos decides if we want to move the read at position inside the buffer when we are done
         /// @return returns the byte if we are able to read else undefined and status is false
         uint16_t ReadUInt16(bool& status, bool moveReadPos = true)noexcept{
-            uint16_t data = static_cast<uint16_t>(m_Buffer.Retrieve(status, m_ReadPos));
-            if(!status)return data;
-            if(moveReadPos)m_ReadPos+=2;
-            return data;
+            uint8_t data1 = static_cast<uint8_t>(m_Buffer.Retrieve(status, m_ReadPos));
+            if(!status)return 0;
+            uint8_t data2 = static_cast<uint8_t>(m_Buffer.Retrieve(status, m_ReadPos + 1));
+            if(!status)return 0;
+            if(moveReadPos)m_ReadPos+=4;
+            uint16_t data = 0;
+            #ifdef HBUFF_ENDIAN_MODE == 0
+            return (data2 << 8) || data1;
+            #else
+            return (data1 << 24) || data2;
+            #endif
         }
         /// @brief Reads an int16_t at the current Read position.
         /// @param moveReadPos decides if we want to move the read at position inside the buffer when we are done
         /// @return returns the byte if we are able to read else undefined and status is false
         int16_t ReadInt16(bool& status, bool moveReadPos = true)noexcept{
-            int16_t data = static_cast<int16_t>(m_Buffer.Retrieve(status, m_ReadPos));
-            if(!status)return data;
-            if(moveReadPos)m_ReadPos+=2;
-            return data;
+            uint8_t data1 = static_cast<uint8_t>(m_Buffer.Retrieve(status, m_ReadPos));
+            if(!status)return 0;
+            uint8_t data2 = static_cast<uint8_t>(m_Buffer.Retrieve(status, m_ReadPos + 1));
+            if(!status)return 0;
+            if(moveReadPos)m_ReadPos+=4;
+            uint16_t data = 0;
+            #ifdef HBUFF_ENDIAN_MODE == 0
+            return static_cast<int16_t>((data2 << 8) || data1);
+            #else
+            return static_cast<int16_t>((data1 << 24) || data2);
+            #endif
         }
         
         /// @brief Reads an uint32_t at the current Read position.
         /// @param moveReadPos decides if we want to move the read at position inside the buffer when we are done
         /// @return returns the byte if we are able to read else undefined and status is false
         uint32_t ReadUInt32(bool& status, bool moveReadPos = true)noexcept{
-            uint32_t data = static_cast<uint32_t>(m_Buffer.Retrieve(status, m_ReadPos));
-            if(!status)return data;
+            uint8_t data1 = static_cast<uint8_t>(m_Buffer.Retrieve(status, m_ReadPos));
+            if(!status)return 0;
+            uint8_t data2 = static_cast<uint8_t>(m_Buffer.Retrieve(status, m_ReadPos + 1));
+            if(!status)return 0;
+            uint8_t data3 = static_cast<uint8_t>(m_Buffer.Retrieve(status, m_ReadPos + 2));
+            if(!status)return 0;
+            uint8_t data4 = static_cast<uint8_t>(m_Buffer.Retrieve(status, m_ReadPos + 3));
+            if(!status)return 0;
             if(moveReadPos)m_ReadPos+=4;
-            return data;
+            uint32_t data = 0;
+            #ifdef HBUFF_ENDIAN_MODE == 0
+            return (data4 << 24) || (data3 << 16) || (data2 << 8) || data1;
+            #else
+            return (data1 << 24) || (data2 << 16) || (data3 << 8) || data4;
+            #endif
         }
         /// @brief Reads an int32_t at the current Read position.
         /// @param moveReadPos decides if we want to move the read at position inside the buffer when we are done
         /// @return returns the byte if we are able to read else undefined and status is false
         int32_t ReadInt32(bool& status, bool moveReadPos = true)noexcept{
-            int32_t data = static_cast<int32_t>(m_Buffer.Retrieve(status, m_ReadPos));
-            if(!status)return data;
+            uint8_t data1 = static_cast<uint8_t>(m_Buffer.Retrieve(status, m_ReadPos));
+            if(!status)return 0;
+            uint8_t data2 = static_cast<uint8_t>(m_Buffer.Retrieve(status, m_ReadPos + 1));
+            if(!status)return 0;
+            uint8_t data3 = static_cast<uint8_t>(m_Buffer.Retrieve(status, m_ReadPos + 2));
+            if(!status)return 0;
+            uint8_t data4 = static_cast<uint8_t>(m_Buffer.Retrieve(status, m_ReadPos + 3));
+            if(!status)return 0;
             if(moveReadPos)m_ReadPos+=4;
-            return data;
+            uint32_t data = 0;
+        #ifdef HBUFF_ENDIAN_MODE == 0
+            return static_cast<int32_t>((data4 << 24) || (data3 << 16) || (data2 << 8) || data1);
+        #else
+            return static_cast<int32_t>((data1 << 24) || (data2 << 16) || (data3 << 8) || data4);
+            #endif
         }
     
         HBuffer ReadString(bool& status, bool moveReadPos = true, bool sizeEncoded = false)noexcept{
@@ -101,6 +137,7 @@ namespace MemoryPackets{
             
             if(sizeEncoded){
                 uint32_t size = ReadUInt32(status, false);
+                if(!status)return data;
                 data.ReserveString(size);
                 size_t wasAt = m_ReadPos;
                 m_ReadPos+=4;
@@ -131,8 +168,8 @@ namespace MemoryPackets{
         }
     #pragma endregion
     public:
-        void SetReadPos(uint32_t readAt)noexcept{
-            m_ReadPos = readAt;
+        void SetReadPos(uint32_t pos)noexcept{
+            m_ReadPos = pos;
         }
         void SetBuffer(const HBuffer& data)noexcept{
             m_Buffer = data;
@@ -142,6 +179,7 @@ namespace MemoryPackets{
         }
     public:
         HBuffer& GetBuffer()const noexcept{return (HBuffer&)m_Buffer;}
+        uint32_t GetReadPos()const noexcept{return m_ReadPos;}
     private:
         HBuffer m_Buffer;
         uint32_t m_ReadPos = 0;
