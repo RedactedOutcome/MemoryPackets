@@ -9,14 +9,23 @@ namespace MemoryPackets{
         FPacket()noexcept{}
         FPacket(const HBuffer& data) : m_Buffer(data){}
         FPacket(HBuffer&& data) : m_Buffer(std::move(data)){}
-
+    public:
+        void SetReadPos(uint32_t pos)noexcept{
+            m_ReadPos = pos;
+        }
+        void SetBuffer(const HBuffer& data)noexcept{
+            m_Buffer = data;
+        }
+        void SetBuffer(HBuffer&& data)noexcept{
+            m_Buffer = std::move(data);
+        }
     public:
     #pragma region Writing
         void WriteLength()noexcept{
             HBuffer copy = m_Buffer.GetCopy();
             m_Buffer.InsertInt32At(0, m_ReadPos);
             m_Buffer.InsertAt(sizeof(uint32_t), copy);
-            
+
             /// @brief sets to 0 since we are done with the packet and is now ready for reading
             m_ReadPos = 0;
         }
@@ -25,7 +34,7 @@ namespace MemoryPackets{
             HBuffer copy = m_Buffer.GetCopy();
             m_Buffer.InsertInt32At(0, length);
             m_Buffer.InsertAt(sizeof(uint32_t), copy);
-
+            
             /// @brief sets to 0 since we are done with the packet and is now ready for reading
             m_ReadPos=0;
         }
@@ -150,16 +159,18 @@ namespace MemoryPackets{
     
         HBuffer ReadString(bool& status, bool moveReadPos = true, bool sizeEncoded = false)noexcept{
             HBuffer data;
-            status = false;
-            
+            size_t wasAt = m_ReadPos;
+
+            /// TODO: fix the null terminator
             if(sizeEncoded){
                 uint32_t size = ReadUInt32(status, false);
                 if(!status)return data;
                 data.ReserveString(size);
-                size_t wasAt = m_ReadPos;
                 m_ReadPos+=sizeof(uint32_t);
 
-                for(uint32_t i = 0; i < size; i++){
+
+                /// @brief we do size + 1 to include the null terminator that is suppose to be at the end.
+                for(uint32_t i = 0; i < size + 1; i++){
                     int8_t byte = ReadInt8(status);
                     if(!status){
                         if(!moveReadPos)m_ReadPos = wasAt;
@@ -167,33 +178,22 @@ namespace MemoryPackets{
                     }
                     data.Append(byte);
                 }
-                data.Append('\0');
                 if(!moveReadPos)m_ReadPos = wasAt;
-
-                status = true;
                 return data;
             }
+            /// @brief Normal read. Start adding every byte until we reach a null terminator
             int8_t byte;
             do{
                 byte = ReadInt8(status);
                 if(!status)return data;
                 data.Append(static_cast<char>(byte));
-            }while(byte != 0);
+            }while(byte != '\0');
 
-            status = true;
+            if(!moveReadPos)m_ReadPos = wasAt;
             return data;
         }
     #pragma endregion
-    public:
-        void SetReadPos(uint32_t pos)noexcept{
-            m_ReadPos = pos;
-        }
-        void SetBuffer(const HBuffer& data)noexcept{
-            m_Buffer = data;
-        }
-        void SetBuffer(HBuffer&& data)noexcept{
-            m_Buffer = std::move(data);
-        }
+    
     public:
         HBuffer& GetBuffer()const noexcept{return (HBuffer&)m_Buffer;}
         uint32_t GetReadPos()const noexcept{return m_ReadPos;}
