@@ -62,6 +62,20 @@ namespace MemoryPackets{
             m_Buffer.InsertInt32At(m_ReadPos, static_cast<int32_t>(data));
             m_ReadPos+=sizeof(uint32_t);
         }
+
+        /// @brief Writes a null terminated string into the buffer at the current read pos
+        /// @param data must be a null terminated string. Gets appended to the current buffers read position
+        void WriteString(const char* data)noexcept{
+            size_t strLen = strlen(data);
+            m_Buffer.InsertAt(m_ReadPos, HBuffer(const_cast<char*>(data), strLen, false, false));
+            m_ReadPos+=strLen;
+        }
+
+        void WriteBuffer(const HBuffer& data)noexcept{
+            m_Buffer.InsertInt32At(m_ReadPos, static_cast<int32_t>(data.GetSize()));
+            m_Buffer.InsertAt(m_ReadPos + 4, data);
+            m_ReadPos+=data.GetSize() + 4;
+        }
     #pragma endregion
     public:
     #pragma region Reading
