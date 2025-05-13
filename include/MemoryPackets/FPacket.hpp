@@ -107,10 +107,10 @@ namespace MemoryPackets{
             if(!status)return 0;
             if(moveReadPos)m_ReadPos+=sizeof(uint16_t);
             uint16_t data = 0;
-        #ifdef HBUFF_ENDIAN_MODE == 0
-            return (data2 << 8) || data1;
+        #if HBUFF_ENDIAN_MODE == 0
+            return (data2 << 8) | data1;
         #else
-            return (data1 << 24) || data2;
+            return (data1 << 24) | data2;
         #endif
         }
         /// @brief Reads an int16_t at the current Read position.
@@ -123,10 +123,10 @@ namespace MemoryPackets{
             if(!status)return 0;
             if(moveReadPos)m_ReadPos+=sizeof(uint16_t);
             uint16_t data = 0;
-        #ifdef HBUFF_ENDIAN_MODE == 0
-            return static_cast<int16_t>((data2 << 8) || data1);
+        #if HBUFF_ENDIAN_MODE == 0
+            return static_cast<int16_t>((data2 << 8) | data1);
         #else
-            return static_cast<int16_t>((data1 << 24) || data2);
+            return static_cast<int16_t>((data1 << 24) | data2);
         #endif
         }
         
@@ -144,10 +144,10 @@ namespace MemoryPackets{
             if(!status)return 0;
             if(moveReadPos)m_ReadPos+=sizeof(uint32_t);
             uint32_t data = 0;
-        #ifdef HBUFF_ENDIAN_MODE == 0
-            return (data4 << 24) || (data3 << 16) || (data2 << 8) || data1;
+        #if HBUFF_ENDIAN_MODE == 0
+            return (data4 << 24) | (data3 << 16) | (data2 << 8) | data1;
         #else
-            return (data1 << 24) || (data2 << 16) || (data3 << 8) || data4;
+            return (data1 << 24) | (data2 << 16) | (data3 << 8) | data4;
         #endif
         }
         /// @brief Reads an int32_t at the current Read position.
@@ -164,10 +164,10 @@ namespace MemoryPackets{
             if(!status)return 0;
             if(moveReadPos)m_ReadPos+=sizeof(int32_t);
             uint32_t data = 0;
-        #ifdef HBUFF_ENDIAN_MODE == 0
-            return static_cast<int32_t>((data4 << 24) || (data3 << 16) || (data2 << 8) || data1);
+        #if HBUFF_ENDIAN_MODE == 0
+            return static_cast<int32_t>((data4 << 24) | (data3 << 16) | (data2 << 8) | data1);
         #else
-            return static_cast<int32_t>((data1 << 24) || (data2 << 16) || (data3 << 8) || data4);
+            return static_cast<int32_t>((data1 << 24) | (data2 << 16) | (data3 << 8) | data4);
         #endif
         }
     
