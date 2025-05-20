@@ -25,7 +25,7 @@ namespace MemoryPackets{
     #pragma region Writing
         void InsertLength()noexcept{
             HBuffer copy = m_Buffer.GetCopy();
-            m_Buffer.InsertUInt32At(0, m_ReadPos);
+            m_Buffer.InsertInt32At(0, m_ReadPos);
             m_Buffer.InsertAt(sizeof(uint32_t), copy);
 
             /// @brief sets to 0 since we are done with the packet and is now ready for reading
@@ -34,14 +34,14 @@ namespace MemoryPackets{
         /// @brief inserts the length of the buffer before all of the data
         void InsertLength(uint32_t length)noexcept{
             HBuffer copy = m_Buffer.GetCopy();
-            m_Buffer.InsertUInt32At(0, length);
+            m_Buffer.InsertInt32At(0, length);
             m_Buffer.InsertAt(sizeof(uint32_t), copy);
             
             /// @brief sets to 0 since we are done with the packet and is now ready for reading
             m_ReadPos=0;
         }
         void WriteLength() noexcept{
-            m_Buffer.InsertUInt32At(0, std::min(4, m_ReadPos) - 4);
+            m_Buffer.InsertInt32At(0, std::min(4, m_ReadPos) - 4);
         }
         void WriteInt8(int8_t data)noexcept{
             m_Buffer.InsertInt8At(m_ReadPos, static_cast<int8_t>(data));
