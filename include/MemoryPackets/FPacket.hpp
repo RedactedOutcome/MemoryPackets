@@ -72,8 +72,8 @@ namespace MemoryPackets{
         /// @param data must be a null terminated string. Gets appended to the current buffers read position
         void WriteString(const char* data)noexcept{
             size_t strLen = strlen(data);
-            m_Buffer.InsertAt(m_ReadPos, HBuffer(const_cast<char*>(data), strLen, false, false));
-            m_ReadPos+=strLen;
+            m_Buffer.InsertAt(m_ReadPos, data, strLen);
+            m_ReadPos+=strLen+1;
         }
 
         void WriteBuffer(const HBuffer& data)noexcept{
