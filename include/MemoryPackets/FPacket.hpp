@@ -9,6 +9,8 @@ namespace MemoryPackets{
         FPacket()noexcept{}
         FPacket(const HBuffer& data) : m_Buffer(data){}
         FPacket(HBuffer&& data) : m_Buffer(std::move(data)){}
+        FPacket(const HBuffer& data, uint32_t readPos) : m_Buffer(data), m_ReadPos(readPos){}
+        FPacket(HBuffer&& data, uint32_t readPos) : m_Buffer(std::move(data)), m_ReadPos(readPos){}
     public:
         void SetReadPos(uint32_t pos)noexcept{
             m_ReadPos = pos;
@@ -21,7 +23,7 @@ namespace MemoryPackets{
         }
     public:
     #pragma region Writing
-        void WriteLength()noexcept{
+        void InsertLength()noexcept{
             HBuffer copy = m_Buffer.GetCopy();
             m_Buffer.InsertInt32At(0, m_ReadPos);
             m_Buffer.InsertAt(sizeof(uint32_t), copy);
@@ -30,13 +32,16 @@ namespace MemoryPackets{
             m_ReadPos = 0;
         }
         /// @brief inserts the length of the buffer before all of the data
-        void WriteLength(uint32_t length)noexcept{
+        void InsertLength(uint32_t length)noexcept{
             HBuffer copy = m_Buffer.GetCopy();
             m_Buffer.InsertInt32At(0, length);
             m_Buffer.InsertAt(sizeof(uint32_t), copy);
             
             /// @brief sets to 0 since we are done with the packet and is now ready for reading
             m_ReadPos=0;
+        }
+        void WriteLength() noexcept{
+            m_Buffer
         }
         void WriteInt8(int8_t data)noexcept{
             m_Buffer.InsertInt8At(m_ReadPos, static_cast<int8_t>(data));
@@ -213,6 +218,7 @@ namespace MemoryPackets{
         uint32_t GetReadPos()const noexcept{return m_ReadPos;}
     private:
         HBuffer m_Buffer;
-        uint32_t m_ReadPos = 0;
+        /// @brief size of unsigned integer for packet size
+        uint32_t m_ReadPos = 4;
     };
 }
