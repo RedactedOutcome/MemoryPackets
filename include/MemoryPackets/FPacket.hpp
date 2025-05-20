@@ -216,6 +216,7 @@ namespace MemoryPackets{
     public:
         HBuffer& GetBuffer()const noexcept{return (HBuffer&)m_Buffer;}
         uint32_t GetReadPos()const noexcept{return m_ReadPos;}
+        uint32_t GetLength() const noexcept{return (std::min(static_cast<size_t>(4), static_cast<size_t>(m_ReadPos)) - 4);}
     private:
         HBuffer m_Buffer;
         /// @brief size of unsigned integer for packet size
