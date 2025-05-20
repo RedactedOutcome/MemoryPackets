@@ -41,7 +41,7 @@ namespace MemoryPackets{
             m_ReadPos=0;
         }
         void WriteLength() noexcept{
-            m_Buffer.InsertInt32At(0, std::min<uint32_t, uint32_t>(4, m_ReadPos) - 4);
+            m_Buffer.InsertInt32At(0, std::min(4, (size_t)m_ReadPos) - 4);
         }
         void WriteInt8(int8_t data)noexcept{
             m_Buffer.InsertInt8At(m_ReadPos, static_cast<int8_t>(data));
